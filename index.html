@@ -37,6 +37,13 @@
                 <span class="panel-title">Редактор</span>
                 <div class="panel-actions">
                     <div class="stats" id="stats"></div>
+                    <button class="btn btn-success" onclick="addNewQuest()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Новый квест
+                    </button>
                     <button class="btn btn-primary" onclick="copyResult()" id="copyBtn">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -50,7 +57,16 @@
                 <div class="rows-navigator" id="rowsNavigator" style="display: none;">
                     <div class="rows-header">
                         <span class="rows-title">Загруженные квесты</span>
-                        <span class="rows-count" id="rowsCount"></span>
+                        <div class="rows-header-actions">
+                            <span class="rows-count" id="rowsCount"></span>
+                            <button class="btn btn-small btn-danger" onclick="deleteCurrentQuest()" id="deleteQuestBtn" style="display: none;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3,6 5,6 21,6"></polyline>
+                                    <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"></path>
+                                </svg>
+                                Удалить
+                            </button>
+                        </div>
                     </div>
                     <div class="rows-list" id="rowsList"></div>
                 </div>
@@ -354,6 +370,71 @@
             updateRowsList();
         }
 
+        function createEmptyQuest() {
+            const emptyQuest = {};
+            for (const fieldName of FIELD_NAMES) {
+                emptyQuest[fieldName] = '';
+            }
+            return emptyQuest;
+        }
+
+        function addNewQuest() {
+            const newQuest = createEmptyQuest();
+            
+            // Генерируем временный quest_id для нового квеста
+            const nextQuestId = allRows.length + 1;
+            newQuest['quest_id'] = String(nextQuestId);
+            newQuest['main_name'] = 'a,Новый квест\\0';
+            
+            allRows.push(newQuest);
+            allOriginalRows.push(createEmptyQuest()); // Оригинал пустой - всё будет "изменено"
+            
+            // Переключаемся на новый квест
+            currentRowIndex = allRows.length - 1;
+            currentData = { ...newQuest };
+            originalData = { ...allOriginalRows[currentRowIndex] };
+            
+            syncToInput();
+            renderResult(currentData);
+            updateRowsList();
+            
+            showToast('Новый квест добавлен!');
+        }
+
+        function deleteCurrentQuest() {
+            if (currentRowIndex < 0 || currentRowIndex >= allRows.length) {
+                showToast('Нет квеста для удаления');
+                return;
+            }
+            
+            const questName = getRowDisplayName(allRows[currentRowIndex], currentRowIndex);
+            
+            // Удаляем квест из массивов
+            allRows.splice(currentRowIndex, 1);
+            allOriginalRows.splice(currentRowIndex, 1);
+            
+            // Обновляем индекс текущей строки
+            if (allRows.length === 0) {
+                currentRowIndex = -1;
+                currentData = {};
+                originalData = {};
+                renderResult(null);
+            } else {
+                // Если удалили последний - выбираем предыдущий
+                if (currentRowIndex >= allRows.length) {
+                    currentRowIndex = allRows.length - 1;
+                }
+                currentData = { ...allRows[currentRowIndex] };
+                originalData = { ...allOriginalRows[currentRowIndex] };
+                renderResult(currentData);
+            }
+            
+            syncToInput();
+            updateRowsList();
+            
+            showToast(`Квест ${questName} удалён`);
+        }
+
         function selectRow(index) {
             if (index < 0 || index >= allRows.length) return;
             
@@ -410,14 +491,17 @@
             const navigator = document.getElementById('rowsNavigator');
             const rowsList = document.getElementById('rowsList');
             const rowsCount = document.getElementById('rowsCount');
+            const deleteBtn = document.getElementById('deleteQuestBtn');
             
             if (allRows.length === 0) {
                 navigator.style.display = 'none';
+                deleteBtn.style.display = 'none';
                 return;
             }
             
             navigator.style.display = 'block';
             rowsCount.textContent = `(${allRows.length})`;
+            deleteBtn.style.display = currentRowIndex >= 0 ? 'flex' : 'none';
             
             let html = '';
             for (let index = 0; index < allRows.length; index++) {
