@@ -36,9 +36,9 @@
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
-            background-image:
-                    radial-gradient(ellipse at top left, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
-                    radial-gradient(ellipse at bottom right, rgba(205, 127, 50, 0.03) 0%, transparent 50%);
+            background-image: 
+                radial-gradient(ellipse at top left, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(205, 127, 50, 0.03) 0%, transparent 50%);
         }
 
         .header {
@@ -89,6 +89,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .panel-title {
@@ -107,6 +109,12 @@
             border-radius: 50%;
         }
 
+        .panel-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
         .panel-content {
             flex: 1;
             overflow: hidden;
@@ -114,7 +122,7 @@
             flex-direction: column;
         }
 
-        textarea {
+        textarea#input {
             width: 100%;
             height: 100%;
             background: transparent;
@@ -127,11 +135,11 @@
             line-height: 1.6;
         }
 
-        textarea:focus {
+        textarea#input:focus {
             outline: none;
         }
 
-        textarea::placeholder {
+        textarea#input::placeholder {
             color: var(--text-muted);
         }
 
@@ -215,31 +223,56 @@
             font-size: 0.8rem;
             color: var(--accent-blue);
             word-break: break-all;
+            padding-top: 0.4rem;
         }
 
-        .field-value {
+        .field-input {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
             color: var(--text-primary);
-            word-break: break-word;
-            white-space: pre-wrap;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.4rem 0.6rem;
+            width: 100%;
+            transition: all 0.2s ease;
         }
 
-        .field-value.string {
+        .field-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1);
+        }
+
+        .field-input:hover {
+            border-color: var(--text-muted);
+        }
+
+        .field-input.string {
             color: var(--accent-green);
         }
 
-        .field-value.number {
+        .field-input.number {
             color: var(--accent-purple);
         }
 
-        .field-value.empty {
-            color: var(--text-muted);
-            font-style: italic;
+        .field-input.coordinates {
+            color: var(--accent-copper);
         }
 
-        .field-value.coordinates {
-            color: var(--accent-copper);
+        .field-input.empty {
+            color: var(--text-muted);
+        }
+
+        .field-input.modified {
+            border-color: var(--accent-gold);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        textarea.field-input {
+            min-height: 60px;
+            resize: vertical;
+            line-height: 1.4;
         }
 
         .array-container {
@@ -255,22 +288,43 @@
             margin-bottom: 0.5rem;
         }
 
-        .array-items {
-            display: flex;
-            flex-wrap: wrap;
+        .array-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 0.5rem;
         }
 
-        .array-item {
-            background: var(--bg-tertiary);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
+        .array-item-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
         }
 
-        .array-item.empty {
-            opacity: 0.3;
+        .array-item-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .array-item-input {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.3rem 0.4rem;
+            width: 100%;
+            text-align: center;
+        }
+
+        .array-item-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        .array-item-input.empty {
+            opacity: 0.5;
         }
 
         .btn {
@@ -283,11 +337,31 @@
             font-family: inherit;
             font-size: 0.8rem;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
 
         .btn:hover {
             background: var(--border-color);
             color: var(--text-primary);
+        }
+
+        .btn.btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-copper));
+            border-color: var(--accent-gold);
+            color: var(--bg-primary);
+            font-weight: 600;
+        }
+
+        .btn.btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn.btn-success {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: var(--bg-primary);
         }
 
         .stats {
@@ -307,108 +381,220 @@
             color: var(--accent-gold);
             font-weight: 600;
         }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .sync-indicator {
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .sync-indicator::before {
+            content: '●';
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
-<header class="header">
-    <h1>⚔️ L2 Quest Editor</h1>
-    <span class="subtitle">Парсер данных квестов</span>
-</header>
+    <header class="header">
+        <h1>⚔️ L2 Quest Editor</h1>
+        <span class="subtitle">Редактор данных квестов</span>
+    </header>
 
-<main class="container">
-    <div class="panel">
-        <div class="panel-header">
-            <span class="panel-title">Входные данные</span>
-            <button class="btn" onclick="clearInput()">Очистить</button>
-        </div>
-        <div class="panel-content">
-                <textarea
-                        id="input"
-                        placeholder="Вставьте данные квеста, разделенные табуляцией..."
-                        spellcheck="false"
+    <main class="container">
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">Исходные данные</span>
+                <div class="panel-actions">
+                    <button class="btn" onclick="clearInput()">Очистить</button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <textarea 
+                    id="input" 
+                    placeholder="Вставьте данные квеста, разделенные табуляцией..."
+                    spellcheck="false"
                 ></textarea>
+            </div>
         </div>
-    </div>
 
-    <div class="panel">
-        <div class="panel-header">
-            <span class="panel-title">Результат парсинга</span>
-            <div class="stats" id="stats"></div>
-        </div>
-        <div class="panel-content">
-            <div class="result-container" id="result">
-                <div class="empty-state">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    <p>Введите данные квеста в левую панель</p>
-                    <p style="font-size: 0.8rem; margin-top: 0.5rem;">Поля разделяются табуляцией</p>
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">Редактор</span>
+                <div class="panel-actions">
+                    <div class="stats" id="stats"></div>
+                    <button class="btn btn-primary" onclick="copyResult()" id="copyBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Копировать
+                    </button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <div class="result-container" id="result">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p>Введите данные квеста в левую панель</p>
+                        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Поля разделяются табуляцией</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</main>
+    </main>
 
-<script>
-    const FIELD_NAMES = [
-        'tag_?', 'quest_id', 'quest_prog', 'main_name', 'prog_name', 'description',
-        'cnt1', 'items[0]', 'items[1]', 'items[2]', 'items[3]', 'items[4]', 'items[5]',
-        'items[6]', 'items[7]', 'items[8]', 'items[9]', 'items[10]', 'items[11]',
-        'items[12]', 'items[13]', 'cnt2', 'num_items[0]', 'num_items[1]', 'num_items[2]',
-        'num_items[3]', 'num_items[4]', 'num_items[5]', 'num_items[6]', 'num_items[7]',
-        'num_items[8]', 'num_items[9]', 'num_items[10]', 'num_items[11]', 'num_items[12]',
-        'num_items[13]', 'quest_x', 'quest_y', 'quest_z', 'lvl_min', 'lvl_max',
-        'quest_type', 'entity_name', 'get_item_in_quest', 'UNK_1', 'UNK_2',
-        'contact_npc_id', 'contact_npc_x', 'contact_npc_y', 'contact_npc_z',
-        'restricions', 'short_description', 'cnt3',
-        ...Array.from({length: 69}, (_, i) => `req_class[${i}]`),
-        'cnt4', 'req_item[0]', 'req_item[1]', 'req_item[2]', 'req_item[3]', 'req_item[4]',
-        'clan_pet_quest', 'req_quest_complete', 'UNK_3', 'area_id'
-    ];
+    <div class="toast" id="toast">Скопировано в буфер обмена!</div>
 
-    const FIELD_GROUPS = {
-        'Основная информация': ['tag_?', 'quest_id', 'quest_prog', 'main_name', 'prog_name', 'description'],
-        'Предметы (items)': ['cnt1', ...Array.from({length: 14}, (_, i) => `items[${i}]`)],
-        'Количество предметов (num_items)': ['cnt2', ...Array.from({length: 14}, (_, i) => `num_items[${i}]`)],
-        'Координаты квеста': ['quest_x', 'quest_y', 'quest_z'],
-        'Требования уровня': ['lvl_min', 'lvl_max'],
-        'Параметры квеста': ['quest_type', 'entity_name', 'get_item_in_quest', 'UNK_1', 'UNK_2'],
-        'Контактный NPC': ['contact_npc_id', 'contact_npc_x', 'contact_npc_y', 'contact_npc_z'],
-        'Описание': ['restricions', 'short_description'],
-        'Требуемые классы': ['cnt3', ...Array.from({length: 69}, (_, i) => `req_class[${i}]`)],
-        'Требуемые предметы': ['cnt4', ...Array.from({length: 5}, (_, i) => `req_item[${i}]`)],
-        'Прочее': ['clan_pet_quest', 'req_quest_complete', 'UNK_3', 'area_id']
-    };
+    <script>
+        const FIELD_NAMES = [
+            'tag_?', 'quest_id', 'quest_prog', 'main_name', 'prog_name', 'description',
+            'cnt1', 'items[0]', 'items[1]', 'items[2]', 'items[3]', 'items[4]', 'items[5]',
+            'items[6]', 'items[7]', 'items[8]', 'items[9]', 'items[10]', 'items[11]',
+            'items[12]', 'items[13]', 'cnt2', 'num_items[0]', 'num_items[1]', 'num_items[2]',
+            'num_items[3]', 'num_items[4]', 'num_items[5]', 'num_items[6]', 'num_items[7]',
+            'num_items[8]', 'num_items[9]', 'num_items[10]', 'num_items[11]', 'num_items[12]',
+            'num_items[13]', 'quest_x', 'quest_y', 'quest_z', 'lvl_min', 'lvl_max',
+            'quest_type', 'entity_name', 'get_item_in_quest', 'UNK_1', 'UNK_2',
+            'contact_npc_id', 'contact_npc_x', 'contact_npc_y', 'contact_npc_z',
+            'restricions', 'short_description', 'cnt3',
+            ...Array.from({length: 69}, (_, i) => `req_class[${i}]`),
+            'cnt4', 'req_item[0]', 'req_item[1]', 'req_item[2]', 'req_item[3]', 'req_item[4]',
+            'clan_pet_quest', 'req_quest_complete', 'UNK_3', 'area_id'
+        ];
 
-    function parseValue(value) {
-        if (value === undefined || value === '') {
-            return { value: '(пусто)', type: 'empty' };
+        const FIELD_GROUPS = {
+            'Основная информация': ['tag_?', 'quest_id', 'quest_prog', 'main_name', 'prog_name', 'description'],
+            'Предметы (items)': ['cnt1', ...Array.from({length: 14}, (_, i) => `items[${i}]`)],
+            'Количество предметов (num_items)': ['cnt2', ...Array.from({length: 14}, (_, i) => `num_items[${i}]`)],
+            'Координаты квеста': ['quest_x', 'quest_y', 'quest_z'],
+            'Требования уровня': ['lvl_min', 'lvl_max'],
+            'Параметры квеста': ['quest_type', 'entity_name', 'get_item_in_quest', 'UNK_1', 'UNK_2'],
+            'Контактный NPC': ['contact_npc_id', 'contact_npc_x', 'contact_npc_y', 'contact_npc_z'],
+            'Описание': ['restricions', 'short_description'],
+            'Требуемые классы': ['cnt3', ...Array.from({length: 69}, (_, i) => `req_class[${i}]`)],
+            'Требуемые предметы': ['cnt4', ...Array.from({length: 5}, (_, i) => `req_item[${i}]`)],
+            'Прочее': ['clan_pet_quest', 'req_quest_complete', 'UNK_3', 'area_id']
+        };
+
+        // Текущие данные
+        let currentData = {};
+        let originalData = {};
+
+        function getValueType(value, fieldName) {
+            if (value === undefined || value === '') {
+                return 'empty';
+            }
+            
+            if (value.startsWith && value.startsWith('a,') && value.endsWith('\\0')) {
+                return 'string';
+            }
+            
+            if (isCoordinateField(fieldName) && !isNaN(value)) {
+                return 'coordinates';
+            }
+            
+            if (!isNaN(value) && String(value).trim() !== '') {
+                return 'number';
+            }
+            
+            return 'text';
         }
 
-        // Проверка на строку формата a,text\0
-        if (value.startsWith('a,') && value.endsWith('\\0')) {
-            const cleanValue = value.slice(2, -2).replace(/\\n/g, '\n');
-            return { value: cleanValue, type: 'string' };
+        function isCoordinateField(fieldName) {
+            return fieldName.endsWith('_x') || fieldName.endsWith('_y') || fieldName.endsWith('_z');
         }
 
-        // Проверка на число
-        if (!isNaN(value) && value.trim() !== '') {
-            return { value: value, type: 'number' };
+        function isLongTextField(fieldName) {
+            return ['description', 'short_description', 'main_name', 'prog_name', 'entity_name', 'restricions'].includes(fieldName);
         }
 
-        return { value: value, type: 'text' };
-    }
+        function updateField(fieldName, value) {
+            currentData[fieldName] = value;
+            syncToInput();
+            
+            // Обновить класс модификации
+            const input = document.querySelector(`[data-field="${fieldName}"]`);
+            if (input) {
+                const isModified = currentData[fieldName] !== originalData[fieldName];
+                input.classList.toggle('modified', isModified);
+                
+                // Обновить тип
+                const valueType = getValueType(value, fieldName);
+                input.className = input.className.replace(/\b(string|number|coordinates|empty|text)\b/g, '');
+                input.classList.add('field-input', valueType);
+                if (isModified) input.classList.add('modified');
+            }
+            
+            updateStats();
+        }
 
-    function isCoordinateField(fieldName) {
-        return fieldName.endsWith('_x') || fieldName.endsWith('_y') || fieldName.endsWith('_z');
-    }
+        function syncToInput() {
+            const values = FIELD_NAMES.map(field => currentData[field] || '');
+            document.getElementById('input').value = values.join('\t');
+        }
 
-    function renderResult(data) {
-        const resultContainer = document.getElementById('result');
-        const statsContainer = document.getElementById('stats');
+        function updateStats() {
+            const statsContainer = document.getElementById('stats');
+            const totalCount = Object.keys(currentData).length;
+            let filledCount = 0;
+            let modifiedCount = 0;
+            
+            for (const field of Object.keys(currentData)) {
+                if (currentData[field] !== undefined && currentData[field] !== '') {
+                    filledCount++;
+                }
+                if (currentData[field] !== originalData[field]) {
+                    modifiedCount++;
+                }
+            }
+            
+            let statsHtml = `
+                <span class="stat-item">Полей: <span class="stat-value">${totalCount}</span></span>
+                <span class="stat-item">Заполнено: <span class="stat-value">${filledCount}</span></span>
+            `;
+            
+            if (modifiedCount > 0) {
+                statsHtml += `<span class="stat-item" style="color: var(--accent-gold)">Изменено: <span class="stat-value">${modifiedCount}</span></span>`;
+            }
+            
+            statsContainer.innerHTML = statsHtml;
+        }
 
-        if (!data || Object.keys(data).length === 0) {
-            resultContainer.innerHTML = `
+        function renderResult(data) {
+            const resultContainer = document.getElementById('result');
+            const statsContainer = document.getElementById('stats');
+            
+            if (!data || Object.keys(data).length === 0) {
+                resultContainer.innerHTML = `
                     <div class="empty-state">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -417,120 +603,171 @@
                         <p style="font-size: 0.8rem; margin-top: 0.5rem;">Поля разделяются табуляцией</p>
                     </div>
                 `;
-            statsContainer.innerHTML = '';
-            return;
-        }
+                statsContainer.innerHTML = '';
+                return;
+            }
 
-        let filledCount = 0;
-        let totalCount = Object.keys(data).length;
+            currentData = { ...data };
+            originalData = { ...data };
 
-        let html = '';
+            let html = '';
 
-        for (const [groupName, fields] of Object.entries(FIELD_GROUPS)) {
-            const groupFields = fields.filter(field => data.hasOwnProperty(field));
-            if (groupFields.length === 0) continue;
+            for (const [groupName, fields] of Object.entries(FIELD_GROUPS)) {
+                const groupFields = fields.filter(field => data.hasOwnProperty(field));
+                if (groupFields.length === 0) continue;
 
-            // Проверяем, есть ли непустые значения в группе
-            const hasNonEmptyValues = groupFields.some(field => {
-                const parsed = parseValue(data[field]);
-                return parsed.type !== 'empty';
-            });
-
-            // Для массивов req_class показываем компактно
-            if (groupName === 'Требуемые классы') {
-                const cnt3 = parseValue(data['cnt3']);
-                const classes = fields.filter(f => f.startsWith('req_class')).map(f => data[f]);
-                const nonEmptyClasses = classes.filter(v => v !== undefined && v !== '');
-
-                if (cnt3.type !== 'empty') filledCount++;
-                filledCount += nonEmptyClasses.length;
-
-                html += `<div class="field-group">
+                // Для массивов req_class показываем компактно
+                if (groupName === 'Требуемые классы') {
+                    const cnt3Value = data['cnt3'] || '';
+                    const cnt3Type = getValueType(cnt3Value, 'cnt3');
+                    
+                    html += `<div class="field-group">
                         <div class="field-group-title">${groupName}</div>
                         <div class="field-row">
                             <span class="field-name">cnt3</span>
-                            <span class="field-value ${cnt3.type}">${cnt3.value}</span>
+                            <input type="text" 
+                                class="field-input ${cnt3Type}" 
+                                data-field="cnt3" 
+                                value="${escapeAttr(cnt3Value)}"
+                                oninput="updateField('cnt3', this.value)">
                         </div>
                         <div class="array-container">
                             <div class="array-title">req_class[0..68]</div>
-                            <div class="array-items">
-                                ${classes.map((v, i) => {
-                    const isEmpty = v === undefined || v === '';
-                    return `<span class="array-item ${isEmpty ? 'empty' : ''}" title="req_class[${i}]">[${i}]: ${isEmpty ? '-' : v}</span>`;
-                }).join('')}
+                            <div class="array-grid">
+                                ${Array.from({length: 69}, (_, index) => {
+                                    const fieldName = `req_class[${index}]`;
+                                    const value = data[fieldName] || '';
+                                    const isEmpty = value === '';
+                                    return `<div class="array-item-wrapper">
+                                        <span class="array-item-label">[${index}]</span>
+                                        <input type="text" 
+                                            class="array-item-input ${isEmpty ? 'empty' : ''}" 
+                                            data-field="${fieldName}"
+                                            value="${escapeAttr(value)}"
+                                            oninput="updateField('${fieldName}', this.value)">
+                                    </div>`;
+                                }).join('')}
                             </div>
                         </div>
                     </div>`;
-                continue;
-            }
-
-            html += `<div class="field-group">
-                    <div class="field-group-title">${groupName}</div>`;
-
-            for (const field of groupFields) {
-                const parsed = parseValue(data[field]);
-                if (parsed.type !== 'empty') filledCount++;
-
-                let valueClass = parsed.type;
-                if (isCoordinateField(field) && parsed.type === 'number') {
-                    valueClass = 'coordinates';
+                    continue;
                 }
 
-                html += `<div class="field-row">
-                        <span class="field-name">${field}</span>
-                        <span class="field-value ${valueClass}">${escapeHtml(parsed.value)}</span>
-                    </div>`;
+                html += `<div class="field-group">
+                    <div class="field-group-title">${groupName}</div>`;
+
+                for (const field of groupFields) {
+                    const value = data[field] || '';
+                    const valueType = getValueType(value, field);
+                    const isLong = isLongTextField(field);
+                    
+                    if (isLong) {
+                        html += `<div class="field-row">
+                            <span class="field-name">${field}</span>
+                            <textarea 
+                                class="field-input ${valueType}" 
+                                data-field="${field}"
+                                oninput="updateField('${escapeAttr(field)}', this.value)"
+                            >${escapeHtml(value)}</textarea>
+                        </div>`;
+                    } else {
+                        html += `<div class="field-row">
+                            <span class="field-name">${field}</span>
+                            <input type="text" 
+                                class="field-input ${valueType}" 
+                                data-field="${field}" 
+                                value="${escapeAttr(value)}"
+                                oninput="updateField('${escapeAttr(field)}', this.value)">
+                        </div>`;
+                    }
+                }
+
+                html += '</div>';
             }
 
-            html += '</div>';
+            resultContainer.innerHTML = html;
+            updateStats();
         }
 
-        resultContainer.innerHTML = html;
-        statsContainer.innerHTML = `
-                <span class="stat-item">Полей: <span class="stat-value">${totalCount}</span></span>
-                <span class="stat-item">Заполнено: <span class="stat-value">${filledCount}</span></span>
-            `;
-    }
-
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    function parseInput(input) {
-        if (!input.trim()) {
-            return null;
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
         }
 
-        const values = input.split('\t');
-        const data = {};
-
-        for (let i = 0; i < FIELD_NAMES.length && i < values.length; i++) {
-            data[FIELD_NAMES[i]] = values[i];
+        function escapeAttr(text) {
+            if (text === null || text === undefined) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
         }
 
-        return data;
-    }
+        function parseInput(input) {
+            if (!input.trim()) {
+                return null;
+            }
+            
+            const values = input.split('\t');
+            const data = {};
+            
+            for (let index = 0; index < FIELD_NAMES.length && index < values.length; index++) {
+                data[FIELD_NAMES[index]] = values[index];
+            }
+            
+            return data;
+        }
 
-    function clearInput() {
-        document.getElementById('input').value = '';
-        renderResult(null);
-    }
+        function clearInput() {
+            document.getElementById('input').value = '';
+            currentData = {};
+            originalData = {};
+            renderResult(null);
+        }
 
-    // Обработка ввода
-    document.getElementById('input').addEventListener('input', function(e) {
-        const data = parseInput(e.target.value);
-        renderResult(data);
-    });
+        function copyResult() {
+            const values = FIELD_NAMES.map(field => currentData[field] || '');
+            const result = values.join('\t');
+            
+            navigator.clipboard.writeText(result).then(() => {
+                showToast('Скопировано в буфер обмена!');
+            }).catch(() => {
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = result;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('Скопировано в буфер обмена!');
+            });
+        }
 
-    // Обработка вставки
-    document.getElementById('input').addEventListener('paste', function(e) {
-        setTimeout(() => {
-            const data = parseInput(this.value);
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // Обработка ввода в левой панели
+        document.getElementById('input').addEventListener('input', function(event) {
+            const data = parseInput(event.target.value);
             renderResult(data);
-        }, 0);
-    });
-</script>
+        });
+
+        // Обработка вставки
+        document.getElementById('input').addEventListener('paste', function(event) {
+            setTimeout(() => {
+                const data = parseInput(this.value);
+                renderResult(data);
+            }, 0);
+        });
+    </script>
 </body>
 </html>
