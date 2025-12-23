@@ -26,7 +26,7 @@
             <div class="panel-content">
                 <textarea 
                     id="input" 
-                    placeholder="Вставьте данные квеста, разделенные табуляцией..."
+                    placeholder="Вставьте данные квестов (каждый квест на новой строке, поля разделены табуляцией)..."
                     spellcheck="false"
                 ></textarea>
             </div>
@@ -42,18 +42,25 @@
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
-                        Копировать
+                        Копировать всё
                     </button>
                 </div>
             </div>
             <div class="panel-content">
+                <div class="rows-navigator" id="rowsNavigator" style="display: none;">
+                    <div class="rows-header">
+                        <span class="rows-title">Загруженные квесты</span>
+                        <span class="rows-count" id="rowsCount"></span>
+                    </div>
+                    <div class="rows-list" id="rowsList"></div>
+                </div>
                 <div class="result-container" id="result">
                     <div class="empty-state">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        <p>Введите данные квеста в левую панель</p>
-                        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Поля разделяются табуляцией</p>
+                        <p>Введите данные квестов в левую панель</p>
+                        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Каждый квест на новой строке, поля разделяются табуляцией</p>
                     </div>
                 </div>
             </div>
@@ -94,6 +101,9 @@
         };
 
         // Текущие данные
+        let allRows = []; // Массив всех загруженных строк
+        let allOriginalRows = []; // Оригинальные данные для отслеживания изменений
+        let currentRowIndex = -1; // Индекс текущей редактируемой строки
         let currentData = {};
         let originalData = {};
 
@@ -127,6 +137,12 @@
 
         function updateField(fieldName, value) {
             currentData[fieldName] = value;
+            
+            // Обновить данные в массиве
+            if (currentRowIndex >= 0 && currentRowIndex < allRows.length) {
+                allRows[currentRowIndex] = { ...currentData };
+            }
+            
             syncToInput();
             
             // Обновить класс модификации
@@ -143,11 +159,14 @@
             }
             
             updateStats();
+            updateRowsList();
         }
 
         function syncToInput() {
-            const values = FIELD_NAMES.map(field => currentData[field] || '');
-            document.getElementById('input').value = values.join('\t');
+            const lines = allRows.map(row => {
+                return FIELD_NAMES.map(field => row[field] || '').join('\t');
+            });
+            document.getElementById('input').value = lines.join('\n');
         }
 
         function updateStats() {
@@ -187,16 +206,13 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        <p>Введите данные квеста в левую панель</p>
-                        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Поля разделяются табуляцией</p>
+                        <p>Введите данные квестов в левую панель</p>
+                        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Каждый квест на новой строке, поля разделяются табуляцией</p>
                     </div>
                 `;
                 statsContainer.innerHTML = '';
                 return;
             }
-
-            currentData = { ...data };
-            originalData = { ...data };
 
             let html = '';
 
@@ -294,12 +310,12 @@
                 .replace(/>/g, '&gt;');
         }
 
-        function parseInput(input) {
-            if (!input.trim()) {
+        function parseSingleRow(line) {
+            if (!line.trim()) {
                 return null;
             }
             
-            const values = input.split('\t');
+            const values = line.split('\t');
             const data = {};
             
             for (let index = 0; index < FIELD_NAMES.length && index < values.length; index++) {
@@ -309,19 +325,130 @@
             return data;
         }
 
+        function parseInput(input) {
+            if (!input.trim()) {
+                return [];
+            }
+            
+            const lines = input.split('\n').filter(line => line.trim() !== '');
+            const rows = [];
+            
+            for (const line of lines) {
+                const rowData = parseSingleRow(line);
+                if (rowData) {
+                    rows.push(rowData);
+                }
+            }
+            
+            return rows;
+        }
+
         function clearInput() {
             document.getElementById('input').value = '';
+            allRows = [];
+            allOriginalRows = [];
+            currentRowIndex = -1;
             currentData = {};
             originalData = {};
             renderResult(null);
+            updateRowsList();
+        }
+
+        function selectRow(index) {
+            if (index < 0 || index >= allRows.length) return;
+            
+            currentRowIndex = index;
+            currentData = { ...allRows[index] };
+            originalData = { ...allOriginalRows[index] };
+            
+            renderResult(currentData);
+            updateRowsList();
+        }
+
+        function getRowDisplayName(rowData, index) {
+            const questId = rowData['quest_id'] || '';
+            const mainName = rowData['main_name'] || '';
+            
+            let displayName = `#${index + 1}`;
+            
+            if (questId) {
+                displayName += ` [${questId}]`;
+            }
+            
+            if (mainName) {
+                // Удаляем a, и \0 из строки для отображения
+                let cleanName = mainName;
+                if (cleanName.startsWith('a,')) {
+                    cleanName = cleanName.substring(2);
+                }
+                if (cleanName.endsWith('\\0')) {
+                    cleanName = cleanName.slice(0, -2);
+                }
+                if (cleanName.length > 30) {
+                    cleanName = cleanName.substring(0, 30) + '...';
+                }
+                displayName += ` ${cleanName}`;
+            }
+            
+            return displayName;
+        }
+
+        function isRowModified(index) {
+            if (index < 0 || index >= allRows.length) return false;
+            const row = allRows[index];
+            const originalRow = allOriginalRows[index];
+            
+            for (const field of FIELD_NAMES) {
+                if ((row[field] || '') !== (originalRow[field] || '')) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function updateRowsList() {
+            const navigator = document.getElementById('rowsNavigator');
+            const rowsList = document.getElementById('rowsList');
+            const rowsCount = document.getElementById('rowsCount');
+            
+            if (allRows.length === 0) {
+                navigator.style.display = 'none';
+                return;
+            }
+            
+            navigator.style.display = 'block';
+            rowsCount.textContent = `(${allRows.length})`;
+            
+            let html = '';
+            for (let index = 0; index < allRows.length; index++) {
+                const row = allRows[index];
+                const isActive = index === currentRowIndex;
+                const isModified = isRowModified(index);
+                const displayName = getRowDisplayName(row, index);
+                
+                html += `<div class="row-item ${isActive ? 'active' : ''} ${isModified ? 'modified' : ''}" 
+                              onclick="selectRow(${index})">
+                    <span class="row-item-name">${escapeHtml(displayName)}</span>
+                    ${isModified ? '<span class="row-item-badge">изменён</span>' : ''}
+                </div>`;
+            }
+            
+            rowsList.innerHTML = html;
         }
 
         function copyResult() {
-            const values = FIELD_NAMES.map(field => currentData[field] || '');
-            const result = values.join('\t');
+            if (allRows.length === 0) {
+                showToast('Нет данных для копирования');
+                return;
+            }
+            
+            const lines = allRows.map(row => {
+                return FIELD_NAMES.map(field => row[field] || '').join('\t');
+            });
+            const result = lines.join('\n');
             
             navigator.clipboard.writeText(result).then(() => {
-                showToast('Скопировано в буфер обмена!');
+                showToast(`Скопировано ${allRows.length} строк(и) в буфер обмена!`);
             }).catch(() => {
                 // Fallback
                 const textArea = document.createElement('textarea');
@@ -330,7 +457,7 @@
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
-                showToast('Скопировано в буфер обмена!');
+                showToast(`Скопировано ${allRows.length} строк(и) в буфер обмена!`);
             });
         }
 
@@ -343,17 +470,36 @@
             }, 2000);
         }
 
+        function handleInputChange(inputValue) {
+            const rows = parseInput(inputValue);
+            
+            allRows = rows;
+            allOriginalRows = rows.map(row => ({ ...row }));
+            
+            if (rows.length > 0) {
+                currentRowIndex = 0;
+                currentData = { ...rows[0] };
+                originalData = { ...allOriginalRows[0] };
+                renderResult(currentData);
+            } else {
+                currentRowIndex = -1;
+                currentData = {};
+                originalData = {};
+                renderResult(null);
+            }
+            
+            updateRowsList();
+        }
+
         // Обработка ввода в левой панели
         document.getElementById('input').addEventListener('input', function(event) {
-            const data = parseInput(event.target.value);
-            renderResult(data);
+            handleInputChange(event.target.value);
         });
 
         // Обработка вставки
         document.getElementById('input').addEventListener('paste', function(event) {
             setTimeout(() => {
-                const data = parseInput(this.value);
-                renderResult(data);
+                handleInputChange(this.value);
             }, 0);
         });
     </script>
