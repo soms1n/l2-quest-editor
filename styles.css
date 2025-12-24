@@ -208,6 +208,30 @@ textarea#input::placeholder {
     border-bottom: none;
 }
 
+.field-row-inline {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.inline-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.inline-field .field-name {
+    padding-top: 0;
+    white-space: nowrap;
+}
+
+.inline-field .field-input {
+    flex: 1;
+    min-width: 60px;
+}
+
 .field-name {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.8rem;

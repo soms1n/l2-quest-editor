@@ -148,7 +148,7 @@
         }
 
         function isLongTextField(fieldName) {
-            return ['description', 'short_description', 'main_name', 'prog_name', 'entity_name', 'restricions'].includes(fieldName);
+            return ['description', 'short_description'].includes(fieldName);
         }
 
         function updateField(fieldName, value) {
@@ -236,6 +236,80 @@
                 const groupFields = fields.filter(field => data.hasOwnProperty(field));
                 if (groupFields.length === 0) continue;
 
+                // Для массивов items показываем компактно
+                if (groupName === 'Предметы (items)') {
+                    const cnt1Value = data['cnt1'] || '';
+                    const cnt1Type = getValueType(cnt1Value, 'cnt1');
+                    
+                    html += `<div class="field-group">
+                        <div class="field-group-title">${groupName}</div>
+                        <div class="field-row">
+                            <span class="field-name">cnt1</span>
+                            <input type="text" 
+                                class="field-input ${cnt1Type}" 
+                                data-field="cnt1" 
+                                value="${escapeAttr(cnt1Value)}"
+                                oninput="updateField('cnt1', this.value)">
+                        </div>
+                        <div class="array-container">
+                            <div class="array-title">items[0..13]</div>
+                            <div class="array-grid">
+                                ${Array.from({length: 14}, (_, index) => {
+                                    const fieldName = `items[${index}]`;
+                                    const value = data[fieldName] || '';
+                                    const isEmpty = value === '';
+                                    return `<div class="array-item-wrapper">
+                                        <span class="array-item-label">[${index}]</span>
+                                        <input type="text" 
+                                            class="array-item-input ${isEmpty ? 'empty' : ''}" 
+                                            data-field="${fieldName}"
+                                            value="${escapeAttr(value)}"
+                                            oninput="updateField('${fieldName}', this.value)">
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+                    continue;
+                }
+
+                // Для массивов num_items показываем компактно
+                if (groupName === 'Количество предметов (num_items)') {
+                    const cnt2Value = data['cnt2'] || '';
+                    const cnt2Type = getValueType(cnt2Value, 'cnt2');
+                    
+                    html += `<div class="field-group">
+                        <div class="field-group-title">${groupName}</div>
+                        <div class="field-row">
+                            <span class="field-name">cnt2</span>
+                            <input type="text" 
+                                class="field-input ${cnt2Type}" 
+                                data-field="cnt2" 
+                                value="${escapeAttr(cnt2Value)}"
+                                oninput="updateField('cnt2', this.value)">
+                        </div>
+                        <div class="array-container">
+                            <div class="array-title">num_items[0..13]</div>
+                            <div class="array-grid">
+                                ${Array.from({length: 14}, (_, index) => {
+                                    const fieldName = `num_items[${index}]`;
+                                    const value = data[fieldName] || '';
+                                    const isEmpty = value === '';
+                                    return `<div class="array-item-wrapper">
+                                        <span class="array-item-label">[${index}]</span>
+                                        <input type="text" 
+                                            class="array-item-input ${isEmpty ? 'empty' : ''}" 
+                                            data-field="${fieldName}"
+                                            value="${escapeAttr(value)}"
+                                            oninput="updateField('${fieldName}', this.value)">
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+                    continue;
+                }
+
                 // Для массивов req_class показываем компактно
                 if (groupName === 'Требуемые классы') {
                     const cnt3Value = data['cnt3'] || '';
@@ -273,10 +347,134 @@
                     continue;
                 }
 
+                // Для массивов req_item показываем компактно
+                if (groupName === 'Требуемые предметы') {
+                    const cnt4Value = data['cnt4'] || '';
+                    const cnt4Type = getValueType(cnt4Value, 'cnt4');
+                    
+                    html += `<div class="field-group">
+                        <div class="field-group-title">${groupName}</div>
+                        <div class="field-row">
+                            <span class="field-name">cnt4</span>
+                            <input type="text" 
+                                class="field-input ${cnt4Type}" 
+                                data-field="cnt4" 
+                                value="${escapeAttr(cnt4Value)}"
+                                oninput="updateField('cnt4', this.value)">
+                        </div>
+                        <div class="array-container">
+                            <div class="array-title">req_item[0..4]</div>
+                            <div class="array-grid">
+                                ${Array.from({length: 5}, (_, index) => {
+                                    const fieldName = `req_item[${index}]`;
+                                    const value = data[fieldName] || '';
+                                    const isEmpty = value === '';
+                                    return `<div class="array-item-wrapper">
+                                        <span class="array-item-label">[${index}]</span>
+                                        <input type="text" 
+                                            class="array-item-input ${isEmpty ? 'empty' : ''}" 
+                                            data-field="${fieldName}"
+                                            value="${escapeAttr(value)}"
+                                            oninput="updateField('${fieldName}', this.value)">
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+                    continue;
+                }
+
                 html += `<div class="field-group">
                     <div class="field-group-title">${groupName}</div>`;
 
-                for (const field of groupFields) {
+                // Специальная обработка для inline полей (tag_?, quest_id, quest_prog)
+                const inlineFields = ['tag_?', 'quest_id', 'quest_prog'];
+                // Координатные и уровневые поля для отображения в одну строку
+                const coordinateFields = ['quest_x', 'quest_y', 'quest_z', 'contact_npc_x', 'contact_npc_y', 'contact_npc_z', 'lvl_min', 'lvl_max'];
+                // Поля типа квеста для отображения в одну строку
+                const questTypeFields = ['quest_type', 'entity_name'];
+                // Поля get_item_in_quest, UNK_1, UNK_2 в одну строку
+                const questItemFields = ['get_item_in_quest', 'UNK_1', 'UNK_2'];
+                const inlineGroupFields = groupFields.filter(field => inlineFields.includes(field));
+                const coordGroupFields = groupFields.filter(field => coordinateFields.includes(field));
+                const questTypeGroupFields = groupFields.filter(field => questTypeFields.includes(field));
+                const questItemGroupFields = groupFields.filter(field => questItemFields.includes(field));
+                const regularGroupFields = groupFields.filter(field => !inlineFields.includes(field) && !coordinateFields.includes(field) && !questTypeFields.includes(field) && !questItemFields.includes(field));
+
+                // Рендерим inline поля в одну строку
+                if (inlineGroupFields.length > 0) {
+                    html += `<div class="field-row-inline">`;
+                    for (const field of inlineGroupFields) {
+                        const value = data[field] || '';
+                        const valueType = getValueType(value, field);
+                        html += `<div class="inline-field">
+                            <span class="field-name">${field}</span>
+                            <input type="text" 
+                                class="field-input ${valueType}" 
+                                data-field="${field}" 
+                                value="${escapeAttr(value)}"
+                                oninput="updateField('${escapeAttr(field)}', this.value)">
+                        </div>`;
+                    }
+                    html += `</div>`;
+                }
+
+                // Рендерим координатные поля в одну строку
+                if (coordGroupFields.length > 0) {
+                    html += `<div class="field-row-inline">`;
+                    for (const field of coordGroupFields) {
+                        const value = data[field] || '';
+                        const valueType = getValueType(value, field);
+                        html += `<div class="inline-field">
+                            <span class="field-name">${field}</span>
+                            <input type="text" 
+                                class="field-input ${valueType}" 
+                                data-field="${field}" 
+                                value="${escapeAttr(value)}"
+                                oninput="updateField('${escapeAttr(field)}', this.value)">
+                        </div>`;
+                    }
+                    html += `</div>`;
+                }
+
+                // Рендерим поля типа квеста в одну строку
+                if (questTypeGroupFields.length > 0) {
+                    html += `<div class="field-row-inline">`;
+                    for (const field of questTypeGroupFields) {
+                        const value = data[field] || '';
+                        const valueType = getValueType(value, field);
+                        html += `<div class="inline-field">
+                            <span class="field-name">${field}</span>
+                            <input type="text" 
+                                class="field-input ${valueType}" 
+                                data-field="${field}" 
+                                value="${escapeAttr(value)}"
+                                oninput="updateField('${escapeAttr(field)}', this.value)">
+                        </div>`;
+                    }
+                    html += `</div>`;
+                }
+
+                // Рендерим поля get_item_in_quest, UNK_1, UNK_2 в одну строку
+                if (questItemGroupFields.length > 0) {
+                    html += `<div class="field-row-inline">`;
+                    for (const field of questItemGroupFields) {
+                        const value = data[field] || '';
+                        const valueType = getValueType(value, field);
+                        html += `<div class="inline-field">
+                            <span class="field-name">${field}</span>
+                            <input type="text" 
+                                class="field-input ${valueType}" 
+                                data-field="${field}" 
+                                value="${escapeAttr(value)}"
+                                oninput="updateField('${escapeAttr(field)}', this.value)">
+                        </div>`;
+                    }
+                    html += `</div>`;
+                }
+
+                // Рендерим остальные поля как обычно
+                for (const field of regularGroupFields) {
                     const value = data[field] || '';
                     const valueType = getValueType(value, field);
                     const isLong = isLongTextField(field);
